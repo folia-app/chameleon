@@ -43,7 +43,7 @@ context.fillStyle = '#'+tokenID.substr(0, 6);
 context.fillRect(0, 0, width, 288)
 
 
-loadImage('game.png').then(image => {
+loadImage('bitimg/game.png').then(image => {
   context.drawImage(image, 0, 0, 320, 320)
 })
 
@@ -71,7 +71,7 @@ function all(){
     context.fillStyle = '#'+tokenID.substr(i, 6);
     context.fillRect(0, 0, width, 288)
     
-    loadImage('game.png').then(image => {
+    loadImage('bitimg/game.png').then(image => {
       context.drawImage(image, 0, 0, 320, 320)
     })
 
