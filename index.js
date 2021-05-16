@@ -34,6 +34,12 @@ async function go() {
   context.fillStyle = '#'+tokenID.substr(0, 6);
   context.fillRect(0, 0, width, 288)
   
+  tokenID = tokenID.replace("0x", "").toLowerCase();
+
+  var dir = 'go/' + tokenID;
+  if (!fs.existsSync(dir)){
+      fs.mkdirSync(dir);
+  }
   
   image = await loadImage('bitimg/game.png')
   context.drawImage(image, 0, 0, 320, 320)
@@ -44,9 +50,8 @@ async function go() {
   image = await loadImage('bitimg/x.png')
   context.drawImage(image, 0, 272, 16, 16)
   const buffer = canvas.toBuffer('image/png')
-  fs.writeFileSync('go/0000.png', buffer)
+  fs.writeFileSync('go/' + tokenID + '/0000.png', buffer)
   
-  tokenID = tokenID.replace("0x", "").toLowerCase();
   binimages = [...tokenID];
   binimages = binimages.map(k => 'bitimg/' + k +'.png');
   binimagesbit = [...tokenID];
@@ -59,7 +64,7 @@ async function run_audio() {
     //console.log(sounds);
     
     audioconcat(sounds)
-    .concat(tokenID3+'.mp3')
+    .concat("go/" + tokenID+'.mp3')
     .on('start', function (command) {
       console.log('ffmpeg process started:', command)
     })
@@ -93,21 +98,21 @@ async function all(){
     canvas.toBuffer('image/png')
     
     image = await loadImage(binimagesbit[i])
-    if(i<=20){
+    if(i<20){
       context.drawImage(image, (((i+1)*16)-16), 224, 16, 64)
     }else{
       context.drawImage(image, ((((i+1)-20)*16)-16), 224, 16, 64)
     }
     
     image = await loadImage(binimages[i])
-    if(i<=20){
+    if(i<20){
       context.drawImage(image, (((i+1)*16)-16), 288, 16, 16)
     }else{
       context.drawImage(image, ((((i+1)-20)*16)-16), 304, 16, 16)
     }
     
     const buffer = canvas.toBuffer('image/png')
-    fs.writeFileSync('go/000' + (i + 1) + '.png', buffer)
+    fs.writeFileSync('go/' + tokenID + '/000' + (i + 1) + '.png', buffer)
     i++
     await all()
   } else {
@@ -122,7 +127,7 @@ async function video(){
     var numberOfImages = 41; 
     var im, images = new Array();
     for (var i = 0; i < numberOfImages ; i++) {
-      im = "go/000" + i + ".png";
+      im = "go/" + tokenID + "/000" + i + ".png";
       images.push(im);
     }
     
@@ -147,7 +152,7 @@ async function video(){
     }
     
     videoshow(images, videoOptions)
-    .audio(tokenID3+'.mp3', audioParams)
+    .audio("go/0x" + tokenID + '.mp3', audioParams)
     .save(tokenID3+'.mp4')
     .on('start', function (command) {
       console.log('ffmpeg process started:', command)
