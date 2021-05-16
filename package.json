@@ -1,0 +1,17 @@
+{
+  "name": "gameover",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "audioconcat": "^0.1.4",
+    "canvas": "^2.7.0",
+    "videoshow": "^0.1.12"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
