@@ -22,7 +22,7 @@ var sounds = [...tokenID2];
 sounds = sounds.map(i => 'bithex/' + i +'.mp3');
 var binimages, binimagesbit
 go()
-
+// CHAMELEON
 
 async function go() {
   await run_audio()
@@ -41,9 +41,6 @@ async function go() {
       fs.mkdirSync(dir);
   }
   
-  image = await loadImage('bitimg/game.png')
-  context.drawImage(image, 0, 0, 320, 320)
-  
   image = await loadImage('bitimg/o.png')
   context.drawImage(image, 0, 256, 16, 16)
   
@@ -61,7 +58,6 @@ async function go() {
 
 async function run_audio() {
   return new Promise((resolve, reject) => {
-    //console.log(sounds);
     
     audioconcat(sounds)
     .concat("go/" + tokenID+'.mp3')
@@ -86,9 +82,6 @@ async function all(){
     tokenID = tokenID.replace("0x", "").toLowerCase();
     context.fillStyle = '#'+tokenID.substr(i, 6);
     context.fillRect(0, 0, width, 288)
-    
-    image = await loadImage('bitimg/game.png')
-    context.drawImage(image, 0, 0, 320, 320)
     
     image = await loadImage('bitimg/o.png')
     context.drawImage(image, 0, 256, 16, 16)
