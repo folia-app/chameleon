@@ -20,6 +20,8 @@ var tokenID2 = str1.concat(str2);
 
 var sounds = [...tokenID2];
 sounds = sounds.map(i => 'bithex/' + i +'.mp3');
+
+var ran = Math.floor((Math.random() * 32));
 var binimages, binimagesbit
 go()
 // CHAMELEON
@@ -39,6 +41,11 @@ async function go() {
   var dir = 'go/' + tokenID;
   if (!fs.existsSync(dir)){
       fs.mkdirSync(dir);
+  }
+  
+  if (ran < 1){
+      image = await loadImage('bitimg/game.png')
+      context.drawImage(image, 0, 0, 320, 320)
   }
   
   image = await loadImage('bitimg/o.png')
@@ -83,6 +90,11 @@ async function all(){
     context.fillStyle = '#'+tokenID.substr(i, 6);
     context.fillRect(0, 0, width, 288)
     
+  if (ran < 1){
+      image = await loadImage('bitimg/game.png')
+      context.drawImage(image, 0, 0, 320, 320)
+  }
+  
     image = await loadImage('bitimg/o.png')
     context.drawImage(image, 0, 256, 16, 16)
     
