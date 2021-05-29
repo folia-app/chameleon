@@ -1,17 +1,25 @@
 {
-  "name": "gameover",
+  "name": "chameleon",
+  "description": "chameleon by Joan Heemskerk with Billy Rennekamp",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "author": "Joan Heemskerk & Billy Rennekamp",
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "license": "ISC",
   "dependencies": {
     "audioconcat": "^0.1.4",
     "canvas": "^2.7.0",
-    "videoshow": "^0.1.12"
-  },
-  "devDependencies": {},
-  "scripts": {
-    "start": "node index.js"
-  },
-  "author": "",
-  "license": "ISC"
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "dotenv": "^10.0.0",
+    "ethers": "^5.2.0",
+    "express": "~4.16.1",
+    "http-errors": "~1.6.3",
+    "jade": "~1.11.0",
+    "morgan": "~1.9.1",
+    "seedrandom": "^3.0.5",
+    "videoshow": "^0.1.12",
+    "folia-contracts": "github:folia-app/folia-contracts#c884453356098b30050fc6c6e066b4c6464ff551"
+  }
 }
