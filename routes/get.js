@@ -7,7 +7,7 @@ const { Gone } = require('http-errors');
 const go = require('../gen.js')
 
 const seriesID = '2'
-const network = "homestead";
+const network = "rinkeby";
 const networks = {
   'homestead': '1',
   'rinkeby': '4'
@@ -23,6 +23,12 @@ folia = new ethers.Contract(
   contracts.Folia.networks[networkID].address,
   contracts.Folia.abi, provider
 )
+// console.log({folia})
+folia.on('Transfer', (...args) => {
+  var newOwner = args[1].toLowerCase()
+  var sameTokenID = args[2].toString()
+  go(sameTokenID, newOwner)
+})
 
 var router = express.Router();
 
@@ -52,6 +58,7 @@ router.get('/*', async function(req, res, next) {
   } catch (_) {
     return boo(5)
   }
+
 
   const vid = `output/${tokenID.toString() + owner}.mp4`
 

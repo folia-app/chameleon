@@ -13,9 +13,30 @@ const maxWidth = 320
 const canvas = createCanvas(width, height)
 const context = canvas.getContext('2d')
 
+/*
+<!-- 
+ _____ _____ _____ _____ _____ __    _____ _____ _____   
+|     |  |  |  _  |     |   __|  |  |   __|     |   | |  
+|   --|     |     | | | |   __|  |__|   __|  |  | | | |  
+|_____|__|__|__|__|_|_|_|_____|_____|_____|_____|_|___| 
+ ██████ ██   ██  █████  ███    ███ ███████ ██      ███████  ██████  ███    ██     
+██      ██   ██ ██   ██ ████  ████ ██      ██      ██      ██    ██ ████   ██     
+██      ███████ ███████ ██ ████ ██ █████   ██      █████   ██    ██ ██ ██  ██     
+██      ██   ██ ██   ██ ██  ██  ██ ██      ██      ██      ██    ██ ██  ██ ██     
+ ██████ ██   ██ ██   ██ ██      ██ ███████ ███████ ███████  ██████  ██   ████     
+
+CHAMELEON 
+
+Joan Heemskerk (JODI)
+Billy Rennekamp (WIZZ)
+
+-- 2021 --
+-->
+*/
 
 // CHAMELEON
 const go = async (tokenID, ownerAddress) => {
+
   seedrandom(tokenID, { global: true });
 
   var ownerAddress3 = 'output/' + tokenID + ownerAddress;
