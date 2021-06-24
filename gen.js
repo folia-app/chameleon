@@ -28,7 +28,7 @@ const context = canvas.getContext('2d')
 CHAMELEON 
 
 Joan Heemskerk (JODI)
-Billy Rennekamp (WIZZ)
+Billy Rennekamp (OKWME)
 
 -- 2021 --
 -->
