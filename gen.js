@@ -6,9 +6,9 @@ const fs = require('fs')
 const { createCanvas, loadImage } = require('canvas');
 const { resolve } = require('path');
 
-const width = 320
-const height = 320
-const maxWidth = 320
+const width = 1280
+const height = 1280
+const maxWidth = 1280
 
 const canvas = createCanvas(width, height)
 const context = canvas.getContext('2d')
@@ -28,7 +28,7 @@ const context = canvas.getContext('2d')
 CHAMELEON 
 
 Joan Heemskerk (JODI)
-Billy Rennekamp (WIZZ)
+Billy Rennekamp (OKWME)
 
 -- 2021 --
 -->
@@ -56,9 +56,9 @@ const go = async (tokenID, ownerAddress) => {
   context.imageSmoothingEnabled = false
   
   context.fillStyle = '#000000'
-  context.fillRect(0, 288, width, height)
-  context.fillStyle = '#'+ownerAddress.substr(0, 6);
-  context.fillRect(0, 0, width, 288)
+  context.fillRect(0, 1152, width, height)
+  context.fillStyle = '#'+ownerAddress.substr(2, 6); //rGB
+  context.fillRect(0, 0, width, 1152)
   
   ownerAddress = ownerAddress.replace("0x", "").toLowerCase();
 
@@ -69,14 +69,14 @@ const go = async (tokenID, ownerAddress) => {
   
   if (ran < 1){
       image = await loadImage('bitimg/game.png')
-      context.drawImage(image, 0, 0, 320, 320)
+      context.drawImage(image, 0, 0, 1280, 1280)
   }
   
   image = await loadImage('bitimg/o.png')
-  context.drawImage(image, 0, 256, 16, 16)
+  context.drawImage(image, 0, 1024, 64, 64)
   
   image = await loadImage('bitimg/x.png')
-  context.drawImage(image, 0, 272, 16, 16)
+  context.drawImage(image, 0, 1088, 64, 64)
   const buffer = canvas.toBuffer('image/png')
   fs.writeFileSync('go/' + tokenID + '0x' + ownerAddress + '/0000.png', buffer)
   
@@ -110,32 +110,32 @@ const go = async (tokenID, ownerAddress) => {
     if (i < binimages.length){
       ownerAddress = ownerAddress.replace("0x", "").toLowerCase();
       context.fillStyle = '#'+ownerAddress.substr(i, 6);
-      context.fillRect(0, 0, width, 288)
+      context.fillRect(0, 0, width, 1152)
       
     if (ran < 1){
         image = await loadImage('bitimg/game.png')
-        context.drawImage(image, 0, 0, 320, 320)
+        context.drawImage(image, 0, 0, 1280, 1280)
     }
     
       image = await loadImage('bitimg/o.png')
-      context.drawImage(image, 0, 256, 16, 16)
+      context.drawImage(image, 0, 1024, 64, 64)
       
       image = await loadImage('bitimg/x.png')
-      context.drawImage(image, 0, 272, 16, 16)
+      context.drawImage(image, 0, 1088, 64, 64)
       canvas.toBuffer('image/png')
       
       image = await loadImage(binimagesbit[i])
       if(i<20){
-        context.drawImage(image, (((i+1)*16)-16), 224, 16, 64)
+        context.drawImage(image, (((i+1)*64)-64), 896, 64, 256)
       }else{
-        context.drawImage(image, ((((i+1)-20)*16)-16), 224, 16, 64)
+        context.drawImage(image, ((((i+1)-20)*64)-64), 896, 64, 256)
       }
       
       image = await loadImage(binimages[i])
       if(i<20){
-        context.drawImage(image, (((i+1)*16)-16), 288, 16, 16)
+        context.drawImage(image, (((i+1)*64)-64), 1152, 64, 64)
       }else{
-        context.drawImage(image, ((((i+1)-20)*16)-16), 304, 16, 16)
+        context.drawImage(image, ((((i+1)-20)*64)-64), 1216, 64, 64)
       }
       
       const buffer = canvas.toBuffer('image/png')
@@ -166,7 +166,7 @@ const go = async (tokenID, ownerAddress) => {
         transitionDuration: 0.01, // seconds
         videoBitrate: 1024,
         videoCodec: 'libx264',
-        size: '320x?',
+        size: '1280x?',
         audioBitrate: '128k',
         audioChannels: 2,
         format: 'mp4',
