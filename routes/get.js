@@ -4,7 +4,9 @@ require('dotenv').config()
 contracts = require('folia-contracts')
 const fs = require('fs');
 const { Gone } = require('http-errors');
-const go = require('../gen.js')
+const go = require('../gen.js');
+const { FoliaControllerV2 } = require('folia-contracts');
+// const { FoliaControllerV2 } = require('folia-contracts');
 
 const seriesID = '2'
 const network = "rinkeby";
@@ -23,6 +25,12 @@ folia = new ethers.Contract(
   contracts.Folia.networks[networkID].address,
   contracts.Folia.abi, provider
 )
+
+foliaControllerV2 = new ethers.Contract(
+  contracts.FoliaControllerV2.networks[networkID].address,
+  contracts.FoliaControllerV2.abi, provider
+)
+
 // console.log({folia})
 folia.on('Transfer', (...args) => {
   var newOwner = args[1].toLowerCase()
@@ -30,33 +38,45 @@ folia.on('Transfer', (...args) => {
   go(sameTokenID, newOwner)
 })
 
+var boo = function (res, int) {
+  return res.status(404).send(int.toString() || '404')
+}
 var router = express.Router();
+
+router.get('/list', async function(req, res, next) {
+  try {
+    var work = await foliaControllerV2.works(seriesID)
+    var printed = work.printed.toNumber()
+    var list = [...Array(printed)].map((_, y) => `https://chameleon.folia.app/get/${(seriesID * 1_000_000) + y + 1}.png`);
+    return res.end(JSON.parseJSON(list));
+  } catch (error) {
+    boo(res, error)
+  }
+})
 
 /* GET users listing. */
 router.get('/*', async function(req, res, next) {
-  var boo = function (int) {
-    return res.status(404).send(int.toString() || '404')
-  }
+
   const splat = req.params[0]
-  if (!splat) return boo(1)
+  if (!splat) return boo(res, 1)
   const splats = splat.split('.')
-  if (splats.length !== 2) return boo(2)
+  if (splats.length !== 2) return boo(res, 2)
   let tokenID
   try {
     tokenID = ethers.BigNumber.from(splats[0])
   } catch (_) {
-    return boo(3)
+    return boo(res, 3)
   }
   const suf = splats[1]
-  if(suf !== 'mp4' && suf !== 'png') return boo(4)
+  if(suf !== 'mp4' && suf !== 'png') return boo(res, 4)
 
-  if (tokenID.div(1_000_000).toString() !== seriesID) return boo(5)
+  if (tokenID.div(1_000_000).toString() !== seriesID) return boo(res, 5)
 
   let owner
   try {
     owner = (await folia.ownerOf(tokenID)).toLowerCase()
   } catch (_) {
-    return boo(5)
+    return boo(res, 5)
   }
 
 
@@ -71,7 +91,7 @@ router.get('/*', async function(req, res, next) {
   try {
     fs.accessSync(vid)
   } catch (_) {
-    boo(6)
+    boo(res, 6)
   }
 
   if (suf == 'mp4') {
