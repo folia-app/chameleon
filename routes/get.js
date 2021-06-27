@@ -49,7 +49,6 @@ router.get('/list', async function(req, res, next) {
     // var printed = work.printed.toNumber()
     var printed = 256
     var list = [...Array(printed)].map((_, y) => `https://chameleon.folia.app/get/${(seriesID * 1_000_000) + y + 1}.png`);
-    console.log({list})
     return res.end(JSON.stringify({list}));
   } catch (error) {
     boo(res, error)
