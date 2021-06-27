@@ -5,10 +5,10 @@ contracts = require('folia-contracts')
 const fs = require('fs');
 const { Gone } = require('http-errors');
 const go = require('../gen.js');
-const { FoliaControllerV2 } = require('folia-contracts');
+// const { FoliaControllerV2 } = require('folia-contracts');
 // const { FoliaControllerV2 } = require('folia-contracts');
 
-const seriesID = '2'
+const seriesID = '12'
 const network = "rinkeby";
 const networks = {
   'homestead': '1',
@@ -26,10 +26,10 @@ folia = new ethers.Contract(
   contracts.Folia.abi, provider
 )
 
-foliaControllerV2 = new ethers.Contract(
-  contracts.FoliaControllerV2.networks[networkID].address,
-  contracts.FoliaControllerV2.abi, provider
-)
+// foliaControllerV2 = new ethers.Contract(
+//   contracts.FoliaControllerV2.networks[networkID].address,
+//   contracts.FoliaControllerV2.abi, provider
+// )
 
 // console.log({folia})
 folia.on('Transfer', (...args) => {
@@ -45,10 +45,12 @@ var router = express.Router();
 
 router.get('/list', async function(req, res, next) {
   try {
-    var work = await foliaControllerV2.works(seriesID)
-    var printed = work.printed.toNumber()
+    // var work = await foliaControllerV2.works(seriesID)
+    // var printed = work.printed.toNumber()
+    var printed = 256
     var list = [...Array(printed)].map((_, y) => `https://chameleon.folia.app/get/${(seriesID * 1_000_000) + y + 1}.png`);
-    return res.end(JSON.parseJSON(list));
+    console.log({list})
+    return res.end(JSON.stringify({list}));
   } catch (error) {
     boo(res, error)
   }
