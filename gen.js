@@ -57,7 +57,7 @@ const go = async (tokenID, ownerAddress) => {
   
   context.fillStyle = '#000000'
   context.fillRect(0, 288, width, height)
-  context.fillStyle = '#'+ownerAddress.substr(0, 6);
+  context.fillStyle = '#'+ownerAddress.substr(2, 6); // rGB
   context.fillRect(0, 0, width, 288)
   
   ownerAddress = ownerAddress.replace("0x", "").toLowerCase();
