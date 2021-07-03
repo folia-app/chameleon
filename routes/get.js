@@ -33,6 +33,7 @@ folia = new ethers.Contract(
 
 
 folia.on('Transfer', (...args) => {
+  console.log(`onTransfer ${args[2].toString()}`)
   var newOwner = args[1].toLowerCase()
   var sameTokenID = args[2].toString()
   tokenID = ethers.BigNumber.from(sameTokenID)
