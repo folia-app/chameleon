@@ -49,6 +49,7 @@ const go = async (tokenID, ownerAddress) => {
   sounds = sounds.map(i => 'bithex/' + i +'.mp3');
 
   var ran = Math.floor((Math.random() * 6)); // dice
+  console.log(`TokenID ${tokenID} = Dice ${ran}`)
   var binimages, binimagesbit
 
   await run_audio()
