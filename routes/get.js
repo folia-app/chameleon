@@ -48,10 +48,15 @@ folia.on('Transfer', async (...args) => {
   if (tokenID.div(1_000_000).toString() !== seriesID) return
   try {
     await go(sameTokenID, newOwner)
-  } catch(_) {
+  } catch(error) {
+    console.error({error})
     console.log('failed to generate video, waiting 1sec and trying again')
     setTimeout(async() => {
-      await go(sameTokenID, newOwner)
+      try {
+        await go(sameTokenID, newOwner)
+      } catch (error) {
+        console.error({error})
+      }
     }, 1000)
   }
 })
