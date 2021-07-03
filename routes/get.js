@@ -59,6 +59,36 @@ router.get('/list', async function(req, res, next) {
 })
 
 
+router.get('/gen/*', async function(req, res, next) {
+
+  const splat = req.params[0]
+  if (!splat) return boo(res, 1)
+  const splats = splat.split('.')
+  if (splats.length !== 2) return boo(res, 2)
+  let tokenID
+  try {
+    tokenID = ethers.BigNumber.from(splats[0])
+  } catch (_) {
+    return boo(res, 3)
+  }
+  const suf = splats[1]
+  if(suf !== 'mp4' && suf !== 'png') return boo(res, 4)
+
+  if (tokenID.div(1_000_000).toString() !== seriesID) return boo(res, 5)
+
+  let owner
+  try {
+    owner = (await folia.ownerOf(tokenID)).toLowerCase()
+  } catch (_) {
+    return boo(res, 5)
+  }
+
+
+  const vid = `output/${tokenID.toString() + owner}.mp4`
+  await go(tokenID.toString(), owner)
+  return res.status(200).send("OK")
+
+})
 
 /* GET users listing. */
 router.get('/*', async function(req, res, next) {
@@ -96,7 +126,7 @@ router.get('/*', async function(req, res, next) {
         fs.accessSync(vid)
         resolve()
       } catch (_) {
-        if (count > 7) {
+        if (count > 25) {
           reject()
         } else {
           setTimeout(async () => {
@@ -118,7 +148,8 @@ router.get('/*', async function(req, res, next) {
     try {
       await isTheVideoReady(vid)
     } catch(_) {
-      await go(tokenID.toString(), owner)
+      return boo(res, "please standby")
+      // await go(tokenID.toString(), owner)
     }
   }
 
