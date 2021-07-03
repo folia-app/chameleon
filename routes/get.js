@@ -32,14 +32,31 @@ folia = new ethers.Contract(
 // )
 
 
-folia.on('Transfer', (...args) => {
+// var keepGoing = (tokenID, owner) => {
+//     try {
+//       await go(tokenID, owner)
+//     } catch(_) {
+//       await keepGoing(tokenId, owner)
+//     }
+// }
+
+folia.on('Transfer', async (...args) => {
   console.log(`onTransfer ${args[2].toString()}`)
   var newOwner = args[1].toLowerCase()
   var sameTokenID = args[2].toString()
   tokenID = ethers.BigNumber.from(sameTokenID)
   if (tokenID.div(1_000_000).toString() !== seriesID) return
-  go(sameTokenID, newOwner)
+  try {
+    await go(sameTokenID, newOwner)
+  } catch(_) {
+    console.log('failed to generate video, waiting 1sec and trying again')
+    setTimeout(async() => {
+      await go(sameTokenID, newOwner)
+    }, 1000)
+  }
 })
+
+
 
 var boo = function (res, int) {
   return res.status(404).send(int.toString() || '404')
@@ -84,8 +101,21 @@ router.get('/gen/*', async function(req, res, next) {
   }
 
 
-  const vid = `output/${tokenID.toString() + owner}.mp4`
-  await go(tokenID.toString(), owner)
+  // const vid = `output/${tokenID.toString() + owner}.mp4`
+
+  try {
+    console.log(`generate video ${tokenId}`)
+    await go(tokenID.toString(), owner)
+  } catch(_) {
+    console.log('failed to generate video, waiting 1sec and trying again')
+    setTimeout(async() => {
+      try {
+        await go(tokenID.toString(), owner)
+      } catch(_) {
+        return res.status(500).send("didn't work")
+      }
+    }, 1000)
+  }
   return res.status(200).send("OK")
 
 })
