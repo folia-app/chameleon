@@ -96,7 +96,7 @@ router.get('/*', async function(req, res, next) {
         fs.accessSync(vid)
         resolve()
       } catch (_) {
-        if (count > 5) {
+        if (count > 7) {
           reject()
         } else {
           setTimeout(async () => {
