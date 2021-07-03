@@ -31,16 +31,14 @@ folia = new ethers.Contract(
 //   contracts.FoliaControllerV2.abi, provider
 // )
 
-// console.log({folia})
-// folia.on('Transfer', (...args) => {
-//   console.log({args})
-//   var newOwner = args[1].toLowerCase()
-//   var sameTokenID = args[2].toString()
-//   tokenID = ethers.BigNumber.from(sameTokenID)
-//   // console.log(tokenID.toString())
-//   if (tokenID.div(1_000_000).toString() !== seriesID) return
-//   go(sameTokenID, newOwner)
-// })
+
+folia.on('Transfer', (...args) => {
+  var newOwner = args[1].toLowerCase()
+  var sameTokenID = args[2].toString()
+  tokenID = ethers.BigNumber.from(sameTokenID)
+  if (tokenID.div(1_000_000).toString() !== seriesID) return
+  go(sameTokenID, newOwner)
+})
 
 var boo = function (res, int) {
   return res.status(404).send(int.toString() || '404')
@@ -89,10 +87,38 @@ router.get('/*', async function(req, res, next) {
 
   const vid = `output/${tokenID.toString() + owner}.mp4`
 
+
+  var isTheVideoReady = async (vid, count = 0) => {
+    console.log(`isTheVideoReady (${vid}) Try #${count}`)
+    return new Promise((resolve, reject) => {
+      try {
+        fs.accessSync(vid)
+        resolve()
+      } catch (_) {
+        if (count > 5) {
+          reject()
+        } else {
+          setTimeout(async () => {
+            try {
+              await isTheVideoReady(vid, count + 1)
+              resolve()
+            } catch(_) {
+              reject()
+            }
+          }, 1000)
+        }
+      }
+    }) 
+  }
+
   try {
     fs.accessSync(vid)
   } catch (_) {
-    await go(tokenID.toString(), owner)
+    try {
+      await isTheVideoReady(vid)
+    } catch(_) {
+      await go(tokenID.toString(), owner)
+    }
   }
 
   try {
