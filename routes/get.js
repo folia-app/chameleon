@@ -49,13 +49,13 @@ folia.on('Transfer', async (...args) => {
   try {
     await go(sameTokenID, newOwner)
   } catch(error) {
-    console.error({error})
+    console.log({error})
     console.log('failed to generate video, waiting 1sec and trying again')
     setTimeout(async() => {
       try {
         await go(sameTokenID, newOwner)
       } catch (error) {
-        console.error({error})
+        console.log({error})
       }
     }, 1000)
   }
