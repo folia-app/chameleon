@@ -9,7 +9,7 @@ const go = require('../gen.js');
 // const { FoliaControllerV2 } = require('folia-contracts');
 
 const seriesID = '12'
-const network = "rinkeby";
+const network = "homestead";
 const networks = {
   'homestead': '1',
   'rinkeby': '4'
