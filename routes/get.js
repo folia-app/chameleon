@@ -32,15 +32,15 @@ folia = new ethers.Contract(
 // )
 
 // console.log({folia})
-folia.on('Transfer', (...args) => {
-  console.log({args})
-  var newOwner = args[1].toLowerCase()
-  var sameTokenID = args[2].toString()
-  tokenID = ethers.BigNumber.from(sameTokenID)
-  // console.log(tokenID.toString())
-  if (tokenID.div(1_000_000).toString() !== seriesID) return
-  go(sameTokenID, newOwner)
-})
+// folia.on('Transfer', (...args) => {
+//   console.log({args})
+//   var newOwner = args[1].toLowerCase()
+//   var sameTokenID = args[2].toString()
+//   tokenID = ethers.BigNumber.from(sameTokenID)
+//   // console.log(tokenID.toString())
+//   if (tokenID.div(1_000_000).toString() !== seriesID) return
+//   go(sameTokenID, newOwner)
+// })
 
 var boo = function (res, int) {
   return res.status(404).send(int.toString() || '404')
@@ -58,6 +58,8 @@ router.get('/list', async function(req, res, next) {
     boo(res, error)
   }
 })
+
+
 
 /* GET users listing. */
 router.get('/*', async function(req, res, next) {
