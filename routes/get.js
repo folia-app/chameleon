@@ -76,7 +76,7 @@ var checkAll = async () => {
     })()
   }
 }
-var checkAllInterval = setInterval(checkAll, 30 * 60 * 1000) // 30 min
+var checkAllInterval = setInterval(checkAll, 60 * 60 * 1000) // 60 min
 checkAll()
 
 folia.on('Transfer', async (...args) => {
