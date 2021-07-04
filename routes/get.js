@@ -41,6 +41,44 @@ folia = new ethers.Contract(
 // }
 
 
+
+var checkAll = async () => {
+  console.log(`check all`)
+  var makeVid = async (tokenID, owner) => {
+    const vid = `output/${tokenID.toString() + owner.toLowerCase()}.mp4`
+    console.log(`MAKE VID: (${vid})`)
+    try {
+      fs.accessSync(vid)
+      console.log(`EXISTS ALREADY: ${vid}`)
+      return
+    } catch (_) { 
+      try {
+        await go(tokenID, owner)
+      } catch(error) {
+        console.log(`FAILED TO MAKE: ${vid}`)
+        console.log(`RETRY IN 1sec`)
+        console.log({error})
+        setTimeout(async() => {
+          makeVid(tokenID, owner)
+        }, 1000)
+      }
+    }
+  }
+  var totalSupply = Number((await folia.totalSupply()).toString())
+  for (var i = 1; i < totalSupply + 1; i++) {
+    var tokenID = (seriesID * 1_000_000) + i
+    var owner = (await folia.ownerOf(tokenID)).toLowerCase()
+    makeVid(tokenID, owner)
+    await (() => {
+      return new Promise((resolve, _) => {
+        setTimeout(resolve, 10 * 1000) // 10 sec
+      })
+    })()
+  }
+}
+var checkAllInterval = setInterval(checkAll, 30 * 60 * 1000) // 30 min
+checkAll()
+
 folia.on('Transfer', async (...args) => {
   console.log(`onTransfer ${args[2].toString()}`)
   var newOwner = args[1].toLowerCase()
