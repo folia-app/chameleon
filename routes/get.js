@@ -40,25 +40,37 @@ folia = new ethers.Contract(
 //     }
 // }
 
+
 folia.on('Transfer', async (...args) => {
   console.log(`onTransfer ${args[2].toString()}`)
   var newOwner = args[1].toLowerCase()
   var sameTokenID = args[2].toString()
   tokenID = ethers.BigNumber.from(sameTokenID)
   if (tokenID.div(1_000_000).toString() !== seriesID) return
-  try {
-    await go(sameTokenID, newOwner)
-  } catch(error) {
-    console.log({error})
-    console.log('failed to generate video, waiting 1sec and trying again')
-    setTimeout(async() => {
+
+  var makeVid = async (tokenID, owner) => {
+    const vid = `output/${tokenID.toString() + owner.toLowerCase()}.mp4`
+    console.log(`MAKE VID: (${vid})`)
+    try {
+      fs.accessSync(vid)
+      console.log(`EXISTS ALREADY: ${vid}`)
+      return
+    } catch (_) { 
       try {
-        await go(sameTokenID, newOwner)
-      } catch (error) {
+        await go(tokenID, owner)
+      } catch(error) {
+        console.log(`FAILED TO MAKE: ${vid}`)
+        console.log(`RETRY IN 1sec`)
         console.log({error})
+        setTimeout(async() => {
+          makeVid(tokenID, owner)
+        }, 1000)
       }
-    }, 1000)
+    }
   }
+
+  makeVid(sameTokenID, newOwner)
+
 })
 
 
