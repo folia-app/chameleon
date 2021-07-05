@@ -15,11 +15,12 @@
     "dotenv": "^10.0.0",
     "ethers": "^5.2.0",
     "express": "~4.16.1",
+    "folia-contracts": "github:folia-app/folia-contracts#c884453356098b30050fc6c6e066b4c6464ff551",
     "http-errors": "~1.6.3",
     "jade": "~1.11.0",
     "morgan": "~1.9.1",
+    "node-fetch": "^2.6.1",
     "seedrandom": "^3.0.5",
-    "videoshow": "^0.1.12",
-    "folia-contracts": "github:folia-app/folia-contracts#c884453356098b30050fc6c6e066b4c6464ff551"
+    "videoshow": "^0.1.12"
   }
 }

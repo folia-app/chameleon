@@ -5,6 +5,8 @@ contracts = require('folia-contracts')
 const fs = require('fs');
 const { Gone } = require('http-errors');
 const go = require('../gen.js');
+const fetch = require('node-fetch');
+
 // const { FoliaControllerV2 } = require('folia-contracts');
 // const { FoliaControllerV2 } = require('folia-contracts');
 
@@ -41,6 +43,14 @@ folia = new ethers.Contract(
 // }
 
 
+var refreshOpensea = function(tokenID) {
+  var url = `https://api.opensea.io/api/v1/asset/${folia.address}/${tokenID}/?force_update=true`
+  console.log({url})
+  fetch(url)
+  .then(response => response.json())
+  .then(data => console.log({opensea: data}))
+  .catch(error => { console.log(error) })
+}
 
 var checkAll = async () => {
   console.log(`check all`)
@@ -54,6 +64,7 @@ var checkAll = async () => {
     } catch (_) { 
       try {
         await go(tokenID, owner)
+        refreshOpensea(tokenID)
       } catch(error) {
         console.log(`FAILED TO MAKE: ${vid}`)
         console.log(`RETRY IN 1sec`)
@@ -79,6 +90,7 @@ var checkAll = async () => {
 var checkAllInterval = setInterval(checkAll, 60 * 60 * 1000) // 60 min
 checkAll()
 
+
 folia.on('Transfer', async (...args) => {
   console.log(`onTransfer ${args[2].toString()}`)
   var newOwner = args[1].toLowerCase()
@@ -96,6 +108,7 @@ folia.on('Transfer', async (...args) => {
     } catch (_) { 
       try {
         await go(tokenID, owner)
+        refreshOpensea(tokenID)
       } catch(error) {
         console.log(`FAILED TO MAKE: ${vid}`)
         console.log(`RETRY IN 1sec`)
@@ -161,6 +174,7 @@ router.get('/gen/*', async function(req, res, next) {
   try {
     console.log(`generate video ${tokenId}`)
     await go(tokenID.toString(), owner)
+    refreshOpensea(tokenID.toString())
   } catch(_) {
     console.log('failed to generate video, waiting 1sec and trying again')
     setTimeout(async() => {
