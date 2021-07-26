@@ -52,15 +52,19 @@ var refreshOpensea = function(tokenID) {
   .catch(error => { console.log(error) })
 }
 
-var checkAll = async () => {
+var checkAll = async (first = false) => {
   console.log(`check all`)
   var makeVid = async (tokenID, owner) => {
     const vid = `output/${tokenID.toString() + owner.toLowerCase()}.mp4`
     console.log(`MAKE VID: (${vid})`)
     try {
-      fs.accessSync(vid)
-      console.log(`EXISTS ALREADY: ${vid}`)
-      return
+      if (!first) {
+        fs.accessSync(vid)
+        console.log(`EXISTS ALREADY: ${vid}`)
+        return
+      } else {
+        throw new Error('make it anyway')
+      }
     } catch (_) { 
       try {
         await go(tokenID, owner)
@@ -88,7 +92,7 @@ var checkAll = async () => {
   }
 }
 var checkAllInterval = setInterval(checkAll, 60 * 60 * 1000) // 60 min
-checkAll()
+checkAll(true)
 
 
 folia.on('Transfer', async (...args) => {
