@@ -48,9 +48,9 @@ const go = async (tokenID, ownerAddress) => {
   var sounds = [...ownerAddress2];
   sounds = sounds.map(i => 'bithex/' + i +'.mp3');
 
-  var ran = Math.floor((Math.random() * 6)); // dice
+  // var ran = Math.floor((Math.random() * 6)); // dice
   var goseed =["12000004","12000022","12000028","12000034","12000052","12000054","12000056","12000068","12000073","12000077","12000082","12000090","12000091","12000101","12000106","12000116","12000120","12000123","12000140","12000143","12000157","12000158","12000166","12000168","12000173","12000174","12000180","12000190","12000191","12000192","12000205","12000209","12000214","12000221","12000224","12000233","12000240","12000249"]
-  ran  = goseed.indexOf(tokenID) > 0 ? 0 : 1
+  var ran  = goseed.includes(tokenID.toString())
   console.log(`TokenID ${tokenID} = Dice ${ran}`)
   var binimages, binimagesbit
 
@@ -70,7 +70,7 @@ const go = async (tokenID, ownerAddress) => {
       fs.mkdirSync(dir);
   }
   
-  if (ran < 1){
+  if (ran){
       image = await loadImage('bitimg/game.png')
       context.drawImage(image, 0, 0, 320, 320)
   }
@@ -115,7 +115,7 @@ const go = async (tokenID, ownerAddress) => {
       context.fillStyle = '#'+ownerAddress.substr(i, 6);
       context.fillRect(0, 0, width, 288)
       
-    if (ran < 1){
+    if (ran){
         image = await loadImage('bitimg/game.png')
         context.drawImage(image, 0, 0, 320, 320)
     }
