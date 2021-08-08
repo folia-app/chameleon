@@ -139,7 +139,7 @@ router.get('/list', async function(req, res, next) {
   try {
     // var work = await foliaControllerV2.works(seriesID)
     // var printed = work.printed.toNumber()
-    var printed = 256
+    var printed = 272
     var list = [...Array(printed)].map((_, y) => `https://chameleon.folia.app/get/${(seriesID * 1_000_000) + y + 1}.png`);
     return res.end(JSON.stringify({list}));
   } catch (error) {
