@@ -23,7 +23,7 @@ var checkCount = function() {
     if (data < 0) {
       data = 0
     }
-    console.log({data: data.toString()})
+
     fs.writeFile("public/txt/"+token.toString()+".txt", data.toString(), (err) => {
     if (err) console.log(err);
         });
