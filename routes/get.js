@@ -7,6 +7,32 @@ const { Gone } = require('http-errors');
 const go = require('../gen.js');
 const fetch = require('node-fetch');
 
+
+var checkCount = function() {
+  console.log('checking count')
+  for(let i = 1; i < 257; i++) {
+    h=("00" + i).slice (-3);
+      const tokenID = ('12000' + h)
+      checkTrans(tokenID)
+    }
+
+  async function checkTrans(token) {
+    fs.readdir( 'output', (error, files) => {
+    const startsWithtokenID = files.filter((files) => files.slice(0, 8)===token.toString());
+    let data = startsWithtokenID.length-1;
+    if (data < 0) {
+      data = 0
+    }
+    console.log({data: data.toString()})
+    fs.writeFile("public/txt/"+token.toString()+".txt", data.toString(), (err) => {
+    if (err) console.log(err);
+        });
+    });
+  };
+}
+checkCount()
+setInterval(checkCount, 24 * 60 * 60 * 1000)
+
 // const { FoliaControllerV2 } = require('folia-contracts');
 // const { FoliaControllerV2 } = require('folia-contracts');
 
