@@ -78,9 +78,12 @@ var refreshOpensea = function (tokenID) {
   };
   // console.log({ url })
   fetch(url, options)
-    .then(response => response.json())
+    .then(response => {
+      console.log({ response })
+      return response.json()
+    })
     .then(data => console.log({ opensea: data }))
-    .catch(error => { console.log(error) })
+    .catch(error => { console.error(error) })
 }
 
 var checkAll = async (first = false) => {
