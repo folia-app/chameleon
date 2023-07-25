@@ -78,10 +78,7 @@ var refreshOpensea = function (tokenID) {
   };
   // console.log({ url })
   fetch(url, options)
-    .then(response => {
-      console.log({ response })
-      return response.json()
-    })
+    .then(response => response.json())
     .then(data => console.log({ opensea: data }))
     .catch(error => { console.error(error) })
 }
