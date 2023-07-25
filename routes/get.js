@@ -8,25 +8,25 @@ const go = require('../gen.js');
 const fetch = require('node-fetch');
 
 
-var checkCount = function() {
+var checkCount = function () {
   console.log('checking count')
-  for(let i = 1; i < 257; i++) {
-    h=("00" + i).slice (-3);
-      const tokenID = ('12000' + h)
-      checkTrans(tokenID)
-    }
+  for (let i = 1; i < 257; i++) {
+    h = ("00" + i).slice(-3);
+    const tokenID = ('12000' + h)
+    checkTrans(tokenID)
+  }
 
   async function checkTrans(token) {
-    fs.readdir( 'output', (error, files) => {
-    const startsWithtokenID = files.filter((files) => files.slice(0, 8)===token.toString());
-    let data = startsWithtokenID.length-1;
-    if (data < 0) {
-      data = 0
-    }
+    fs.readdir('output', (error, files) => {
+      const startsWithtokenID = files.filter((files) => files.slice(0, 8) === token.toString());
+      let data = startsWithtokenID.length - 1;
+      if (data < 0) {
+        data = 0
+      }
 
-    fs.writeFile("public/txt/"+token.toString()+".txt", data.toString(), (err) => {
-    if (err) console.log(err);
-        });
+      fs.writeFile("public/txt/" + token.toString() + ".txt", data.toString(), (err) => {
+        if (err) console.log(err);
+      });
     });
   };
 }
@@ -45,7 +45,7 @@ const networks = {
 const networkID = networks[network]
 
 const provider = new ethers.providers.InfuraProvider(
-  network, 
+  network,
   process.env.INFURA_API_KEY,
 );
 
@@ -69,13 +69,18 @@ folia = new ethers.Contract(
 // }
 
 
-var refreshOpensea = function(tokenID) {
-  var url = `https://api.opensea.io/api/v1/asset/${folia.address}/${tokenID}/?force_update=true`
-  console.log({url})
-  fetch(url)
-  .then(response => response.json())
-  .then(data => console.log({opensea: data}))
-  .catch(error => { console.log(error) })
+var refreshOpensea = function (tokenID) {
+  // var url = `https://api.opensea.io/api/v1/asset/${folia.address}/${tokenID}/?force_update=true`
+  const url = `https://api.opensea.io/v2/chain/ethereum/contract/${folia.address}/nfts/${tokenID}/refresh`
+  const options = {
+    method: 'POST',
+    headers: { accept: 'application/json', 'X-API-KEY': process.env.OPENSEA_API }
+  };
+  // console.log({ url })
+  fetch(url, options)
+    .then(response => response.json())
+    .then(data => console.log({ opensea: data }))
+    .catch(error => { console.log(error) })
 }
 
 var checkAll = async (first = false) => {
@@ -91,15 +96,15 @@ var checkAll = async (first = false) => {
       } else {
         throw new Error('make it anyway')
       }
-    } catch (_) { 
+    } catch (_) {
       try {
         await go(tokenID, owner)
         refreshOpensea(tokenID)
-      } catch(error) {
+      } catch (error) {
         console.log(`FAILED TO MAKE: ${vid}`)
         console.log(`RETRY IN 1sec`)
-        console.log({error})
-        setTimeout(async() => {
+        console.log({ error })
+        setTimeout(async () => {
           makeVid(tokenID, owner)
         }, 1000)
       }
@@ -135,15 +140,15 @@ folia.on('Transfer', async (...args) => {
       fs.accessSync(vid)
       console.log(`EXISTS ALREADY: ${vid}`)
       return
-    } catch (_) { 
+    } catch (_) {
       try {
         await go(tokenID, owner)
         refreshOpensea(tokenID)
-      } catch(error) {
+      } catch (error) {
         console.log(`FAILED TO MAKE: ${vid}`)
         console.log(`RETRY IN 1sec`)
-        console.log({error})
-        setTimeout(async() => {
+        console.log({ error })
+        setTimeout(async () => {
           makeVid(tokenID, owner)
         }, 1000)
       }
@@ -161,20 +166,20 @@ var boo = function (res, int) {
 }
 var router = express.Router();
 
-router.get('/list', async function(req, res, next) {
+router.get('/list', async function (req, res, next) {
   try {
     // var work = await foliaControllerV2.works(seriesID)
     // var printed = work.printed.toNumber()
     var printed = 272
     var list = [...Array(printed)].map((_, y) => `https://chameleon.folia.app/get/${(seriesID * 1_000_000) + y + 1}.png`);
-    return res.end(JSON.stringify({list}));
+    return res.end(JSON.stringify({ list }));
   } catch (error) {
     boo(res, error)
   }
 })
 
 
-router.get('/gen/*', async function(req, res, next) {
+router.get('/gen/*', async function (req, res, next) {
 
   const splat = req.params[0]
   if (!splat) return boo(res, 1)
@@ -187,7 +192,7 @@ router.get('/gen/*', async function(req, res, next) {
     return boo(res, 3)
   }
   const suf = splats[1]
-  if(suf !== 'mp4' && suf !== 'png') return boo(res, 4)
+  if (suf !== 'mp4' && suf !== 'png') return boo(res, 4)
 
   if (tokenID.div(1_000_000).toString() !== seriesID) return boo(res, 5)
 
@@ -205,12 +210,12 @@ router.get('/gen/*', async function(req, res, next) {
     console.log(`generate video ${tokenId}`)
     await go(tokenID.toString(), owner)
     refreshOpensea(tokenID.toString())
-  } catch(_) {
+  } catch (_) {
     console.log('failed to generate video, waiting 1sec and trying again')
-    setTimeout(async() => {
+    setTimeout(async () => {
       try {
         await go(tokenID.toString(), owner)
-      } catch(_) {
+      } catch (_) {
         return res.status(500).send("didn't work")
       }
     }, 1000)
@@ -220,7 +225,7 @@ router.get('/gen/*', async function(req, res, next) {
 })
 
 /* GET users listing. */
-router.get('/*', async function(req, res, next) {
+router.get('/*', async function (req, res, next) {
 
   const splat = req.params[0]
   if (!splat) return boo(res, 1)
@@ -233,7 +238,7 @@ router.get('/*', async function(req, res, next) {
     return boo(res, 3)
   }
   const suf = splats[1]
-  if(suf !== 'mp4' && suf !== 'png') return boo(res, 4)
+  if (suf !== 'mp4' && suf !== 'png') return boo(res, 4)
 
   if (tokenID.div(1_000_000).toString() !== seriesID) return boo(res, 5)
 
@@ -262,13 +267,13 @@ router.get('/*', async function(req, res, next) {
             try {
               await isTheVideoReady(vid, count + 1)
               resolve()
-            } catch(_) {
+            } catch (_) {
               reject()
             }
           }, 1000)
         }
       }
-    }) 
+    })
   }
 
   try {
@@ -276,7 +281,7 @@ router.get('/*', async function(req, res, next) {
   } catch (_) {
     try {
       await isTheVideoReady(vid)
-    } catch(_) {
+    } catch (_) {
       return boo(res, "please standby")
       // await go(tokenID.toString(), owner)
     }
@@ -296,11 +301,11 @@ router.get('/*', async function(req, res, next) {
     if (range) {
       const parts = range.replace(/bytes=/, "").split("-")
       const start = parseInt(parts[0], 10)
-      const end = parts[1] 
+      const end = parts[1]
         ? parseInt(parts[1], 10)
-        : fileSize-1
-      const chunksize = (end-start)+1
-      const file = fs.createReadStream(path, {start, end})
+        : fileSize - 1
+      const chunksize = (end - start) + 1
+      const file = fs.createReadStream(path, { start, end })
       const head = {
         'Content-Range': `bytes ${start}-${end}/${fileSize}`,
         'Accept-Ranges': 'bytes',
