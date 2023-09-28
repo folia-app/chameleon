@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node ./bin/www"
   },
-  "license": "ISC",
+  "license": "CC-NC-4.0",
   "dependencies": {
     "audioconcat": "^0.1.4",
     "canvas": "^2.7.0",
