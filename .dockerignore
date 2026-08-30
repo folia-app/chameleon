@@ -1,0 +1,11 @@
+node_modules
+.git
+*.log
+.env
+
+# The artwork lives on the volume, not in the image.
+output
+go
+
+# Written at runtime by checkCount(); the directory is created by the entrypoint.
+public/txt
