@@ -1,0 +1,35 @@
+# Chameleon — Joan Heemskerk (JODI) with Billy Rennekamp.
+#
+# Always on, not scale-to-zero. It holds a Transfer subscription so that a token
+# changing hands is redrawn for its new owner, and a stopped machine sees no
+# transfers. It also serves .mp4 with range requests, which a cold start would
+# stall.
+
+app            = "folia-chameleon"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT     = "3000"
+  # Rebuild videos that already exist. Off: the published mp4s were migrated
+  # from the droplet, and regenerating them would replace the artwork collectors
+  # already own. See checkAll() in routes/get.js.
+  REGENERATE_ALL = "false"
+
+[http_service]
+  internal_port        = 3000
+  force_https          = true
+  auto_stop_machines   = false
+  auto_start_machines  = true
+  min_machines_running = 1
+
+[[mounts]]
+  source      = "chameleon_media"
+  destination = "/data"
+
+[[vm]]
+  size   = "shared-cpu-1x"
+  memory = "1gb"

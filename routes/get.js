@@ -83,47 +83,74 @@ var refreshOpensea = function (tokenID) {
     .catch(error => { console.error(error) })
 }
 
-var checkAll = async (first = false) => {
-  console.log(`check all`)
+// Series 12 printed 272 works. folia.totalSupply() is the whole Folia contract
+// across every series — 884 at the time of writing — so the old loop bound
+// asked ownerOf() for 612 tokens that do not exist. The first of those reverts,
+// and because the call is awaited directly in the loop the rejection aborted
+// the entire pass. Every pass this code has ever run ended by throwing.
+const PRINTED = 272
+
+let checkAllRunning = false
+
+/**
+ * Walk the series and make sure every token has a video for its current owner.
+ *
+ * @param {boolean} regenerate rebuild videos that already exist. This is what
+ *   the boot call used to do unconditionally, which meant every restart redrew
+ *   all 272 works — hours of ffmpeg, and a fresh mp4 in place of the published
+ *   one. Off by default; REGENERATE_ALL=true opts back in.
+ */
+var checkAll = async (regenerate = false) => {
+  if (checkAllRunning) {
+    console.log('check all: previous pass still running, skipping this tick')
+    return
+  }
+  checkAllRunning = true
+  console.log(`check all (regenerate=${regenerate})`)
+
   var makeVid = async (tokenID, owner) => {
     const vid = `output/${tokenID.toString() + owner.toLowerCase()}.mp4`
+    if (!regenerate) {
+      try {
+        fs.accessSync(vid)
+        return false
+      } catch (_) { /* missing, fall through and make it */ }
+    }
     console.log(`MAKE VID: (${vid})`)
     try {
-      if (!first) {
-        fs.accessSync(vid)
-        console.log(`EXISTS ALREADY: ${vid}`)
-        return
-      } else {
-        throw new Error('make it anyway')
-      }
-    } catch (_) {
-      try {
-        await go(tokenID, owner)
-        refreshOpensea(tokenID)
-      } catch (error) {
-        console.log(`FAILED TO MAKE: ${vid}`)
-        console.log(`RETRY IN 1sec`)
-        console.log({ error })
-        setTimeout(async () => {
-          makeVid(tokenID, owner)
-        }, 1000)
-      }
+      await go(tokenID, owner)
+      refreshOpensea(tokenID)
+    } catch (error) {
+      console.log(`FAILED TO MAKE: ${vid}`)
+      console.log({ error })
     }
+    return true
   }
-  var totalSupply = Number((await folia.totalSupply()).toString())
-  for (var i = 1; i < totalSupply + 1; i++) {
-    var tokenID = (seriesID * 1_000_000) + i
-    var owner = (await folia.ownerOf(tokenID)).toLowerCase()
-    makeVid(tokenID, owner)
-    await (() => {
-      return new Promise((resolve, _) => {
-        setTimeout(resolve, 10 * 1000) // 10 sec
-      })
-    })()
+
+  try {
+    for (var i = 1; i <= PRINTED; i++) {
+      var tokenID = (seriesID * 1_000_000) + i
+      let owner
+      try {
+        owner = (await folia.ownerOf(tokenID)).toLowerCase()
+      } catch (_) {
+        // Burned, or never minted. One bad token used to end the whole pass.
+        continue
+      }
+      const made = await makeVid(tokenID, owner)
+      // Only pace the loop when there was actually work to pace. A pass over an
+      // already-complete series used to take 45 minutes of sleeping on a 60
+      // minute timer; now it takes seconds and cannot overrun the next tick.
+      if (made) await new Promise((resolve) => setTimeout(resolve, 10 * 1000))
+    }
+  } finally {
+    checkAllRunning = false
   }
 }
 var checkAllInterval = setInterval(checkAll, 60 * 60 * 1000) // 60 min
-checkAll(true)
+checkAll(process.env.REGENERATE_ALL === 'true').catch((e) => {
+  console.error(`check all failed: ${e.message}`)
+})
 
 
 folia.on('Transfer', async (...args) => {
@@ -170,7 +197,7 @@ router.get('/list', async function (req, res, next) {
   try {
     // var work = await foliaControllerV2.works(seriesID)
     // var printed = work.printed.toNumber()
-    var printed = 272
+    var printed = PRINTED
     var list = [...Array(printed)].map((_, y) => `https://chameleon.folia.app/get/${(seriesID * 1_000_000) + y + 1}.png`);
     return res.end(JSON.stringify({ list }));
   } catch (error) {
