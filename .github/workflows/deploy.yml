@@ -1,0 +1,59 @@
+# Deploy to Fly on push, so what runs is always a commit that exists in git.
+#
+# Needs FLY_API_TOKEN in the repo secrets:
+#   gh secret set FLY_API_TOKEN -b "$(flyctl tokens create deploy -a folia-chameleon)"
+#
+# This image pins Node 12.18.1 and ffmpeg 4.2.7 (ubuntu focal) because that is
+# the encoder that produced every published mp4. It cannot be built with
+# --local-only on an arm Mac — the Node 12 x64 binary will not run under Rosetta,
+# so the build dies before npm starts. CI runners are x86, so this is the
+# dependable place to build it.
+name: deploy
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md']
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-folia-chameleon
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Deploy
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          flyctl deploy \
+            --config fly/fly.toml \
+            --dockerfile fly/Dockerfile \
+            --app folia-chameleon \
+            --build-arg "GIT_SHA=${GITHUB_SHA::7}" \
+            --build-arg "BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --ha=false --yes
+
+      - name: Verify it serves video and frames
+        run: |
+          HOST=https://folia-chameleon.fly.dev
+          for i in $(seq 1 30); do
+            CT=$(curl -fsS -o /dev/null -w '%{content_type}' -m 30 "$HOST/get/12000001.mp4") || CT=""
+            case "$CT" in video/mp4*) echo "serving video ($CT)"; break ;; esac
+            [ "$i" = 30 ] && { echo "never served an mp4 (last: $CT)" >&2; exit 1; }
+            sleep 10
+          done
+          curl -fsS -m 30 "$HOST/get/12000001.png" -o /dev/null || { echo "png failed" >&2; exit 1; }
+          curl -fsS -m 30 "$HOST/get/list" | grep -q 12000001 || { echo "list failed" >&2; exit 1; }
+          echo "frames and list ok"
+
+      # REGENERATE_ALL must stay off. With it on, every boot redraws all 272
+      # works and replaces the published mp4s — the artwork collectors own.
+      - name: Refuse to ship a config that would redraw the collection
+        run: |
+          grep -q 'REGENERATE_ALL *= *"false"' fly/fly.toml \
+            || { echo "fly.toml does not pin REGENERATE_ALL=false" >&2; exit 1; }
+          echo "REGENERATE_ALL pinned false"
