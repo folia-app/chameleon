@@ -44,10 +44,50 @@ const networks = {
 }
 const networkID = networks[network]
 
-const provider = new ethers.providers.InfuraProvider(
-  network,
-  process.env.INFURA_API_KEY,
-);
+/**
+ * Keyless public RPCs, the same set viper-server settled on (its lib/chain.js),
+ * overridable with RPC_HTTP as a comma separated list to match that convention.
+ *
+ * This used to be an InfuraProvider reading INFURA_API_KEY. When that key died
+ * every ownerOf() below started throwing, and because both route handlers
+ * answer a failed owner lookup with boo(res, 5), every token on the site served
+ * a 1-byte 404 while the homepage stayed up. Nothing here needs a keyed
+ * provider: it is three ownerOf() reads and one Transfer subscription.
+ *
+ * Order matters. Tenderly answers eth_getLogs over the whole contract history,
+ * publicnode caps ranges but is reliable, and drpc answers ownerOf fine but
+ * errors on getLogs — so it sits last, backing up the reads without being
+ * trusted for the event poll.
+ */
+const RPC_HTTP = (process.env.RPC_HTTP || [
+  'https://mainnet.gateway.tenderly.co',
+  'https://ethereum-rpc.publicnode.com',
+  'https://eth.drpc.org'
+].join(',')).split(',').map(function (s) { return s.trim() }).filter(Boolean)
+
+// StaticJsonRpcProvider skips network detection, so a slow or down endpoint
+// cannot stall boot — checkAll() runs immediately on require. Quorum 1: the
+// first endpoint to answer wins, the rest are only tried if it does not.
+const provider = new ethers.providers.FallbackProvider(
+  RPC_HTTP.map(function (url, i) {
+    return {
+      provider: new ethers.providers.StaticJsonRpcProvider(
+        url,
+        ethers.providers.getNetwork(network)
+      ),
+      priority: i + 1,
+      stallTimeout: 4000,
+      weight: 1
+    }
+  }),
+  1
+)
+
+// folia.on('Transfer') polls, and the 4s default is ~21k requests a day against
+// a free endpoint for an event that fires a few times a week. Regenerating a
+// video is not latency critical and checkAll() sweeps hourly as a backstop, so
+// poll slowly and stay well inside the free tiers.
+provider.pollingInterval = Number(process.env.POLL_MS || 15000)
 
 folia = new ethers.Contract(
   contracts.Folia.networks[networkID].address,
@@ -133,8 +173,21 @@ var checkAll = async (regenerate = false) => {
       let owner
       try {
         owner = (await folia.ownerOf(tokenID)).toLowerCase()
-      } catch (_) {
-        // Burned, or never minted. One bad token used to end the whole pass.
+      } catch (e) {
+        // A revert means burned, or never minted — expected, and one bad token
+        // used to end the whole pass. Anything else is the RPC failing, which
+        // is indistinguishable from "token gone" here and is how a dead key
+        // once silently skipped all 272 works. Say so rather than continuing
+        // quietly.
+        //
+        // ethers 5.2.0 reports this contract's reverts as UNPREDICTABLE_GAS_LIMIT
+        // rather than CALL_EXCEPTION — it routes ownerOf through gas estimation —
+        // so both count as "does not exist". A dead endpoint arrives as
+        // SERVER_ERROR, NETWORK_ERROR or TIMEOUT, and those are worth a line.
+        const gone = e.code === 'UNPREDICTABLE_GAS_LIMIT' || e.code === 'CALL_EXCEPTION'
+        if (!gone) {
+          console.error(`check all: ownerOf(${tokenID}) failed: ${e.code} ${e.message}`)
+        }
         continue
       }
       const made = await makeVid(tokenID, owner)
@@ -226,7 +279,12 @@ router.get('/gen/*', async function (req, res, next) {
   let owner
   try {
     owner = (await folia.ownerOf(tokenID)).toLowerCase()
-  } catch (_) {
+  } catch (e) {
+    // Same code 5 as the series check above, deliberately: scripts/parity.js
+    // diffs these bodies against the droplet, which still serves the old code.
+    // The log is what distinguishes them — without it a dead RPC and a token
+    // outside series 12 are the same 1-byte 404 with nothing in the logs.
+    console.error(`ownerOf(${tokenID.toString()}) failed: ${e.message}`)
     return boo(res, 5)
   }
 
@@ -272,7 +330,12 @@ router.get('/*', async function (req, res, next) {
   let owner
   try {
     owner = (await folia.ownerOf(tokenID)).toLowerCase()
-  } catch (_) {
+  } catch (e) {
+    // Same code 5 as the series check above, deliberately: scripts/parity.js
+    // diffs these bodies against the droplet, which still serves the old code.
+    // The log is what distinguishes them — without it a dead RPC and a token
+    // outside series 12 are the same 1-byte 404 with nothing in the logs.
+    console.error(`ownerOf(${tokenID.toString()}) failed: ${e.message}`)
     return boo(res, 5)
   }
 
