@@ -39,7 +39,11 @@ WORKDIR /app
 # git: folia-contracts is a github: dependency.
 RUN apt-get update && apt-get install -y --no-install-recommends git \
  && rm -rf /var/lib/apt/lists/*
-COPY package.json yarn.lock ./
+# yarn.lock is deliberately absent. It used to be copied here, but the install
+# below is npm, which does not read it -- every build resolved fresh from the
+# ranges in package.json while the lockfile sat in the image implying it was
+# pinned. Keeping it only made Dependabot report a tree that never shipped.
+COPY package.json ./
 RUN npm install --production --no-audit --no-fund \
  && apt-get purge -y git && apt-get autoremove -y
 
